@@ -4,28 +4,18 @@ let board = [
   ["", "", ""]
 ];
 
-let players = ["X", "0"];
-let currentPlayer;
-let available = [];
+let w;
+let h;
+let human = "O";
+let ai = "X";
+let currentPlayer = human;
 
 function setup() {
   createCanvas(400, 400);
-  currentPlayer = floor(random(players.length));
-
-  for (let j = 0; j < 3; j++) {
-    for (let i = 0; i < 3; i++) {
-      available.push([i, j]);
-    }
-  }
-}
-
-function nextTurn() {
-  let index = floor(random(available.length));
-  let spot = available.splice(index, 1)[0];
-  let i = spot[0];
-  let j = spot[1];
-  board[i][j] = players[currentPlayer];
-  currentPlayer = (currentPlayer + 1) % players.length;
+  currentPlayer = human;
+  w = width / 3;
+  h = height / 3;
+  bestMove();
 }
 
 function eq3(a, b, c) {
@@ -55,19 +45,32 @@ function checkWinner() {
     winner = board[2][0];
   }
 
-  if (winner == null && available.length == 0) {
+  let openSpots = 0;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] == "") {
+        openSpots++;
+      }
+    }
+  }
+
+  if (winner == null && openSpots == 0) {
     return "tie";
   } else {
     return winner;
   }
 }
 
-function sleep(milliseconds) {
-  const date = Date.now();
-  let currentDate = null;
-  do {
-    currentDate = Date.now();
-  } while (currentDate - date < milliseconds);
+function mousePressed() {
+  if (currentPlayer == human) {
+    let i = floor(mouseX / w);
+    let j = floor(mouseY / h);
+    if (board[i][j] == "") {
+      board[i][j] = human;
+      currentPlayer = ai;
+      bestMove();
+    }
+  }
 }
 
 function draw() {
@@ -87,17 +90,16 @@ function draw() {
       let spot = board[i][j];
       textSize(32);
       strokeWeight(4);
-      if (spot == players[1]) {
+      if (spot == human) {
         noFill();
         ellipse(x, y, w / 2);
-      } else if (spot == players[0]) {
+      } else if (spot == ai) {
         let xr = w / 4;
         line(x - xr, y - xr, x + xr, y + xr);
         line(x + xr, y - xr, x - xr, y + xr);
       }
     }
   }
-  sleep(500);
   let result = checkWinner();
   if (result != null) {
     noLoop();
@@ -105,5 +107,4 @@ function draw() {
       .style("color", "#000000")
       .style("font-size", "32pt");
   }
-  nextTurn();
 }
